@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الدعوات الإلكترونية - حفل تكريم الطلبة الأوائل</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }
+        .container { background: #ffffff; max-width: 600px; width: 100%; margin: 20px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #bd9a5f; }
+        .logo-area h1 { font-size: 24px; color: #1a365d; margin-bottom: 5px; font-weight: 700; }
+        .logo-area p { font-size: 14px; color: #718096; margin-top: 0; margin-bottom: 25px; }
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 15px 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 10px; outline: none; transition: all 0.3s ease; text-align: center; font-weight: 600; }
+        .search-box input:focus { border-color: #bd9a5f; box-shadow: 0 0 10px rgba(189, 154, 95, 0.15); }
+        button.btn-search { background-color: #1a365d; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; margin-top: 10px; }
+        button.btn-search:hover { background-color: #2a4365; }
+        .result-section { margin-top: 25px; display: none; }
+        .success-card { background-color: #f0fff4; border: 1px solid #c6f6d5; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .success-card h3 { color: #22543d; margin: 0 0 10px 0; font-size: 18px; }
+        .error-card { background-color: #fff5f5; border: 1px solid #fed7d7; padding: 20px; border-radius: 10px; color: #742a2a; }
+        .error-card p { margin: 0 0 10px 0; font-weight: 600; }
+        .error-card a { color: #c53030; text-decoration: none; font-weight: 700; border-bottom: 2px dashed #c53030; }
+        .invitation-preview { margin-top: 15px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; position: relative; }
+        .invitation-preview img { width: 100%; display: block; }
+        .btn-download { display: inline-block; background-color: #bd9a5f; color: white; text-decoration: none; padding: 12px 25px; font-weight: 600; border-radius: 8px; margin-top: 15px; transition: background 0.2s; cursor: pointer; border: none; font-size: 15px; }
+        .btn-download:hover { background-color: #a6844c; }
+        .footer { margin-top: 30px; font-size: 12px; color: #a0aec0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-area">
+        <h1>رابطة الحوراء العامة</h1>
+        <p>المنظومة الإلكترونية لاستخراج بطاقات دعوة حفل تكريم الطلبة الأوائل 2026</p>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" id="studentName" placeholder="أدخل اسم الطالب الثلاثي هنا..." autocomplete="off">
+        <button class="btn-search" onclick="checkName()">تحقق من الاسم واستخرج الدعوة</button>
+    </div>
+    
+    <div id="resultSection" class="result-section"></div>
+    
+    <div class="footer">جميع الحقوق محفوظة © رابطة الحوراء العامة 2026</div>
+</div>
+
+<script>
+    const approvedNames = [
+        "أبان حبيب طالب", "أبو الحسن رياض تركي", "أبو الفضل حيدر حسنين", "أحمد مالك محسن", "أحمد نجاح جيجان",
+        "أزل محمد موسى", "أمير طالب نعيمه", "آية علي رضا", "أيهم أحمد", "باقر زين العابدين الخماسي",
+        "تبارك رحمن شاتي", "جنات أحمد نعيمه", "جنات حسين علي", "جنى رياض تركي", "جود أحمد صالح عزيز",
+        "جود حسين علاء", "حسن ناظم شمام", "حسين زين العابدين الخماسي", "حسين سجاد علي", "حسين غياث مشتاق",
+        "حسين مصطفى عبد الواحد", "حوراء عبد الأمير", "حوراء علي جواد", "حيدر رحمن شاتي", "حيدر علي عبد الحسين",
+        "رانية عباس حسين", "رقية رحمة حامد", "رقية علاء", "رواسي أحمد محمد", "ريتاج أحمد محسن",
+        "ريحانة علاء رسم", "ريام صلاح شاكر", "زيد مسلم حسنين", "زين العابدين عقيل هدام", "زينب حيدر حسن",
+        "زينب صلاح مهدي", "زينب عدي كاظم", "زينب نعيم سلطان", "زهراء جواد كاظم", "زهراء رحمة حامد",
+        "سجاد عماد كريم", "سدن علي عبد الحسين", "شبر علي كريم", "شهد كرار أكرم", "طيبة حبيب طالب",
+        "عباس أحمد سوير", "عباس سعد نعيم", "عباس صلاح مهدي", "عباس علاء جابر", "عباس يونس مدلول",
+        "عبد الله محمد سعدي", "علي أحمد صباح", "علي الأكبر سجاد علي", "علي الأكبر ناصر", "علي الدر شاكر",
+        "علي حسين كامل", "علي حسين ماجد", "علي نزار ياسر", "فاطمة الزهراء سعد", "فاطمة نعيم ياسر",
+        "فرح رسول حامد", "فضة عباس هليل", "كيان حسين علاء", "كيان ساجت جبر", "كيان مجيد تركي",
+        "لجين سمير حسين", "ليان حسين كريم", "لينا محسن فالح", "محمد رضا حسين", "محمد قيصر هاشم",
+        "مرتضى حسين هادي", "مريم علي كاظم", "مريم مرتضى علي", "مسرة حسين علي", "مسلم عقيل هدام",
+        "معصومة أسعد محمد", "معصومة حسن صالح", "منتظر حيدر حسن", "ملاك مشتاق عادل", "مؤمل علاء قنديل",
+        "موسى مصطفى رحيم", "ميار حسين هادي", "نرجس علاء حسن", "نور سعد صافي", "هاجر مهند رشيد",
+        "ياسر نزار ياسر", "يوسف أحمد علوان", "يوسف تحسين عيسى"
+    ];
+
+    function normalizeText(text) {
+        return text.trim().replace(/[أإآأ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ');
+    }
+
+    function checkName() {
+        const inputElement = document.getElementById('studentName');
+        const resultSection = document.getElementById('resultSection');
+        const inputName = inputElement.value.trim();
+        if (!inputName) { alert('يرجى كتابة الاسم أولاً'); return; }
+        const normalizedInput = normalizeText(inputName);
+        let foundName = approvedNames.find(name => {
+            return normalizeText(name) === normalizedInput || normalizeText(name).includes(normalizedInput) || normalizedInput.includes(normalizeText(name));
+        });
+        resultSection.style.display = 'block';
+        if (foundName) {
+            resultSection.innerHTML = `
+                <div class="success-card">
+                    <h3>🎉 أهلاً ومرحباً بك، ${foundName}</h3>
+                    <p>تم العثور على اسمك بنجاح ضمن قائمة المكرّمين الأوائل!</p>
+                    <div class="invitation-preview">
+                        <img src="invitation.png" alt="بطاقة الدعوة" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600';">
+                    </div>
+                    <button class="btn-download" onclick="downloadCard('${foundName}')">📥 اضغط هنا لتحميل بطاقة الدعوة</button>
+                </div>
+            `;
+        } else {
+            resultSection.innerHTML = `
+                <div class="error-card">
+                    <p>⚠️ عذراً، الاسم المكتوب غير مدرج حالياً في نظام الدعوات الإلكترونية.</p>
+                    <a href="https://wa.me/9647727175916" target="_blank">📱 اضغط هنا للتواصل عبر الواتساب (07727175916)</a>
+                </div>
+            `;
+        }
+    }
+    function downloadCard(name) {
+        const link = document.createElement('a');
+        link.href = 'invitation.png';
+        link.download = `دعوة حفل التكريم - ${name}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+</body>
+</html>
